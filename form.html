@@ -1,0 +1,223 @@
+
+
+
+
+
+
+<form method="post" action="process.php">
+
+    <label for="full_name">Full Name:</label>
+
+    <input type="text" name="full_name" required><br>
+
+    <label for="email">Email:</label>
+    <input type="email" name="email" required><br>
+    <label for="phone_number">Phone Number:</label>
+    <input type="text" name="phone_number" required><br>
+    <label for="booking_date">Preferred Booking Date:</label>
+    <input type="date" name="booking_date" required><br>
+    <label for="booking_time">Preferred Booking Time:</label>
+    <input type="time" name="booking_time" required><br>
+    <button type="submit">Book Now</button>
+    
+  </form>
+<?php
+$servername = "localhost";
+$username = "ash";
+$password = "ash";
+$dbname = "driving_license";
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+//get booking status from database
+$booking_code = $_POST["booking_code"];
+$sql = "SELECT status FROM license_booking WHERE booking_code='$booking_code'";
+$result = $conn->query($sql);
+$row = $result->fetch_assoc();
+
+//display driving test result
+if ($row["status"] == "pass") {
+    echo "Congratulations! You have passed the driving test.";
+} elseif ($row["status"] == "fail") {
+    echo "Sorry, you have failed the driving test.";
+} else {
+    echo "Invalid booking code.";
+}
+
+//close database connection
+$conn->close();
+?>
+
+
+
+
+#admin.php purano wala 
+<?php
+$servername = "localhost";
+$username = "ash";
+$password = "ash";
+$dbname = "driving_license";
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+//select all pending bookings from database
+$sql = "SELECT * FROM license_booking WHERE status='pending'";
+$result = $conn->query($sql);
+
+//display list of pending bookings
+echo "<h1>Pending Bookings</h1>";
+echo "<table>";
+echo "<tr><th>Booking Code</th><th>Booking Date</th><th>Booking Time</th><th>Result</th></tr>";
+if ($result->num_rows > 0) {
+    while($row = $result->fetch_assoc()) {
+        echo "<tr><td><a href='booking_details.php?booking_code=".$row["booking_code"]."'>".$row["booking_code"]."</a></td><td>".$row["booking_date"]."</td><td>".$row["booking_time"]."</td></tr>";
+    }
+}   else {
+    echo "<tr><td colspan='3'>No pending bookings</td></tr>";
+}
+  
+echo "</table>";
+echo "<form method='POST' action=''>";
+echo "<input type='hidden' name='booking_code' value='" . $row['booking_code'] . "'>";
+echo "<button type='submit' name='pass'>Pass</button>";
+echo "<button type='submit' name='fail'>Fail</button>";
+echo "</form>";
+echo "</td>";
+echo "</tr>";
+
+
+// Process the pass/fail actions when the buttons are clicked
+if (isset($_POST['pass']) || isset($_POST['fail'])) {
+$booking_code = mysqli_real_escape_string($conn, $_POST['booking_code']);
+$status = ($_POST['pass']) ? 'pass' : 'fail';
+$sql = "UPDATE license_booking SET status='$status' WHERE booking_code='$booking_code'";
+mysqli_query($conn, $sql);
+header("Location: check_status.php");
+}exit();
+#header("Location: check_status.php?booking_code=$booking_code");
+
+
+//close database connection
+$conn->close();
+?>
+
+check_status.php ko purano
+<?php
+// Connect to the MySQL database
+$servername = "localhost";
+$username = "ash";
+$password = "ash";
+$dbname = "driving_license";
+
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+
+// Get the booking code from the URL
+$booking_code = $_GET["booking_code"];
+
+// Get the booking details from the database
+$sql = "SELECT * FROM license_booking WHERE booking_code = '$booking_code'";
+$result = mysqli_query($conn, $sql);
+
+if (mysqli_num_rows($result) > 0) {
+  $booking = mysqli_fetch_assoc($result);
+
+  // Check the status of the booking and display the appropriate message
+  if ($booking["status"] == "passed") {
+    echo "Congratulations! You have passed the driving license test.";
+  } else if ($booking["status"] == "failed") {
+    echo "Sorry, you have failed the driving license test.";
+  } else {
+    echo "Your test results are still pending. Please check back later.";
+  }
+} else {
+  echo "Invalid booking code.";
+}
+
+mysqli_close($conn);
+
+
+
+old conformation page
+
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Driving License Booking Confirmation</title>
+	<!-- Add your CSS styling here -->
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #f7f7f7;
+		}
+		
+		h1 {
+			color: #003366;
+			margin-top: 50px;
+			text-align: center;
+		}
+		
+		p {
+			margin-top: 30px;
+			font-size: 18px;
+			line-height: 1.5;
+		}
+		
+		.booking-code {
+			font-size: 24px;
+			font-weight: bold;
+			color: #ff0000;
+		}
+	</style>
+</head>
+<body>
+<h1>Thank you for your booking!</h1>
+	
+	<p>Your booking has been received and is currently pending. Your booking code is: <span class="booking-code"><?php echo $_GET['booking_code']; ?></span></p>
+	
+	<p>We will review your booking and confirm your appointment within the next 24 hours. If you have any questions or concerns, please contact us using the information provided below.</p>
+	
+	<p><strong>Phone:</strong> 555-555-5555</p>
+	
+	<p><strong>Email:</strong> info@drivinglicensebooking.com</p>
+</body>
+</html>
+
+
+
+
+<?php
+// Connect to the MySQL database
+$servername = "localhost";
+$username = "ash";
+$password = "ash";
+$dbname = "driving_license";
+
+$conn = mysqli_connect($servername, $username, $password, $dbname);
+
+// Check if the 'booking_code' parameter is present in the URL
+if (isset($_GET["booking_code"])) {
+  $booking_code = mysqli_real_escape_string($conn, $_GET["booking_code"]);
+  
+  // Retrieve the booking details from the 'license_booking' table based on the booking code
+  $sql = "SELECT * FROM license_booking WHERE booking_code='$booking_code'";
+  $result = mysqli_query($conn, $sql);
+  
+  // Check if a booking record was found
+  if (mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+    $full_name = $row["full_name"];
+    $email = $row["email"];
+    $phone_number = $row["phone_number"];
+    $booking_date = $row["booking_date"];
+    $booking_time = $row["booking_time"];
+    $status = $row["status"];
+    #header("Location: check_status.php?booking_code=$booking_code");
+  } 
+}
+// echo "<a href='check_status.php?booking_code=$booking_code'><button>Click me</button></a>";
+?>
